@@ -15,6 +15,7 @@ __SAMPLER__ = {}
 
 def register_sampler(name: str):
     def wrapper(cls):
+
         if __SAMPLER__.get(name, None):
             raise NameError(f"Name {name} is already registered!") 
         __SAMPLER__[name] = cls
