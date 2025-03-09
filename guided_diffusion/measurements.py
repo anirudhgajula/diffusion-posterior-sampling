@@ -5,14 +5,7 @@ from functools import partial
 import yaml
 from torch.nn import functional as F
 from torchvision import torch
-import numpy as np
-
-try:
-    from motionblur.motionblur import Kernel
-    MOTION_BLUR_AVAILABLE = True
-except ImportError:
-    MOTION_BLUR_AVAILABLE = False
-    print("Warning: motionblur package not available. Motion blur operations will not work.")
+from motionblur.motionblur import Kernel
 
 from util.resizer import Resizer
 from util.img_utils import Blurkernel, fft2_m
