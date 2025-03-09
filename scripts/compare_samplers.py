@@ -221,7 +221,7 @@ def main():
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
         dataset = get_dataset(**task_config['data'], transforms=transform)
-        x_true = dataset[0]['image'].unsqueeze(0).to(device)
+        x_true = dataset[0].unsqueeze(0).to(device)  # Dataset returns tensor directly
     
     # Create measurement
     y = measurement_op.forward(x_true, **measurement_kwargs)
