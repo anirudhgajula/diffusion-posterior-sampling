@@ -30,12 +30,12 @@ class MHTVSampler(MCMCSampler):
         self.step_size = step_size
         self.tv_lambda = tv_lambda
     
-    def log_likelihood(self, x, y):
+    def log_likelihood(self, x, y, **kwargs):
         """Compute log likelihood p(y|x).
         
         For Gaussian noise: -1/(2σ²) ||y - Ax||²
         """
-        forward_pred = self.measurement_op(x)
+        forward_pred = self.measurement_op.forward(x, **kwargs)
         if isinstance(self.noise_model, dict) and self.noise_model['name'] == 'gaussian':
             sigma = self.noise_model['sigma']
             return -0.5 * torch.sum((y - forward_pred)**2) / (sigma**2)
@@ -90,4 +90,4 @@ class MHTVSampler(MCMCSampler):
         log_ratio = (self.log_likelihood(x_proposed, y, **kwargs) + self.log_prior(x_proposed)) - \
                    (self.log_likelihood(x_current, y, **kwargs) + self.log_prior(x_current))
                    
-        return torch.min(torch.tensor(1.0), torch.exp(log_ratio)) 
+        return torch.min(torch.tensor(1.0).to(x_current.device), torch.exp(log_ratio)) 
