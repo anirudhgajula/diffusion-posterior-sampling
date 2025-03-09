@@ -26,7 +26,7 @@ Ex) CUDA 10.2 with pytorch 1.7.0
 
 ### 1) Clone the repository
 ```bash
-git clone https://github.com/DPS2022/diffusion-posterior-sampling
+git clone https://github.com/anirudhgajula/diffusion-posterior-sampling/
 cd diffusion-posterior-sampling
 ```
 
