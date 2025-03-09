@@ -1,3 +1,3 @@
 """
-Codebase for "Improved Denoising Diffusion Probabilistic Models".
+Guided diffusion module for posterior sampling.
 """

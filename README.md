@@ -28,6 +28,9 @@ Ex) CUDA 10.2 with pytorch 1.7.0
 ```bash
 git clone https://github.com/anirudhgajula/diffusion-posterior-sampling/
 cd diffusion-posterior-sampling
+
+# Add the current directory to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 ```
 
 ### 2) Download pretrained checkpoint
