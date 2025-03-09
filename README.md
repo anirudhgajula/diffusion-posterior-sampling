@@ -1,3 +1,5 @@
+In this project, we compare MCMC methods with diffusion based methods, in particular we use pre-conditioned Crank-Nicholson (pCN) with Metropolis Hastings with TV Prior.
+
 # Diffusion Posterior Sampling for General Noisy Inverse Problems (ICLR 2023 spotlight)
 
 ![result-gif1](./figures/motion_blur.gif)
