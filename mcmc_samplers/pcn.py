@@ -28,12 +28,12 @@ class PCNSampler(MCMCSampler):
         if not hasattr(measurement_op, 'transpose'):
             raise ValueError("PCN sampler requires a linear measurement operator with transpose method")
     
-    def log_likelihood(self, x, y):
+    def log_likelihood(self, x, y, **kwargs):
         """Compute log likelihood p(y|x).
         
         For Gaussian noise: -1/(2σ²) ||y - Ax||²
         """
-        forward_pred = self.measurement_op(x)
+        forward_pred = self.measurement_op.forward(x, **kwargs)
         if isinstance(self.noise_model, dict) and self.noise_model['name'] == 'gaussian':
             sigma = self.noise_model['sigma']
             return -0.5 * torch.sum((y - forward_pred)**2) / (sigma**2)
