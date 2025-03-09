@@ -15,12 +15,42 @@ from data.dataloader import get_dataset, get_dataloader
 from util.img_utils import clear_color, mask_generator
 from util.logger import get_logger
 
+def load_model_and_diffusion(model_config, diffusion_config):
+    """Load model and create diffusion sampler.
+    
+    Args:
+        model_config: Model configuration dictionary or path
+        diffusion_config: Diffusion configuration dictionary or path
+    
+    Returns:
+        model: The loaded model
+        diffusion: The diffusion sampler
+    """
+    # Load configs if they're file paths
+    if isinstance(model_config, str):
+        with open(model_config) as f:
+            model_config = yaml.safe_load(f)
+    if isinstance(diffusion_config, str):
+        with open(diffusion_config) as f:
+            diffusion_config = yaml.safe_load(f)
+    
+    # Create model
+    model = create_model(**model_config)
+    
+    # Load checkpoint if specified
+    if 'checkpoint' in model_config:
+        checkpoint = torch.load(model_config['checkpoint'])
+        model.load_state_dict(checkpoint)
+    
+    # Create diffusion sampler
+    diffusion = create_sampler(**diffusion_config)
+    
+    return model, diffusion
 
 def load_yaml(file_path: str) -> dict:
     with open(file_path) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -44,11 +74,8 @@ def main():
     diffusion_config = load_yaml(args.diffusion_config)
     task_config = load_yaml(args.task_config)
    
-    #assert model_config['learn_sigma'] == diffusion_config['learn_sigma'], \
-    #"learn_sigma must be the same for model and diffusion configuartion."
-    
-    # Load model
-    model = create_model(**model_config)
+    # Load model and diffusion
+    model, diffusion = load_model_and_diffusion(model_config, diffusion_config)
     model = model.to(device)
     model.eval()
 
