@@ -22,7 +22,7 @@ class PCNSampler(MCMCSampler):
             beta: Step size parameter (0 < beta < 1)
         """
         super().__init__(measurement_op, noise_model, prior_model)
-        self.beta = beta
+        self.beta = torch.tensor(beta)
         
         # Verify that we have a linear operator
         if not hasattr(measurement_op, 'transpose'):
@@ -52,7 +52,9 @@ class PCNSampler(MCMCSampler):
         x' = √(1-β²)x + βw, where w ~ N(0,I)
         """
         w = torch.randn_like(x_current)
-        return torch.sqrt(1 - self.beta**2) * x_current + self.beta * w
+        sqrt_factor = torch.sqrt(1 - self.beta**2).to(x_current.device)
+        beta = self.beta.to(x_current.device)
+        return sqrt_factor * x_current + beta * w
     
     def acceptance_probability(self, x_proposed, x_current, y, **kwargs):
         """Compute acceptance probability.
@@ -65,4 +67,4 @@ class PCNSampler(MCMCSampler):
         
         # Note: Prior terms cancel out in pCN
         log_alpha = proposed_likelihood - current_likelihood
-        return torch.min(torch.tensor(1.0), torch.exp(log_alpha)) 
+        return torch.min(torch.tensor(1.0).to(x_current.device), torch.exp(log_alpha)) 
