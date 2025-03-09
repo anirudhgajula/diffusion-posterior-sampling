@@ -204,7 +204,7 @@ def main():
     for subdir in ['pcn', 'mh_tv', 'diffusion']:
         os.makedirs(os.path.join(args.save_dir, subdir, 'progress'), exist_ok=True)
     
-    # Load or create test image
+    # Load test image
     if args.image_path:
         # Load and preprocess custom image
         transform = transforms.Compose([
@@ -216,7 +216,11 @@ def main():
         x_true = transform(Image.open(args.image_path)).unsqueeze(0).to(device)
     else:
         # Get image from dataset
-        dataset = get_dataset(data_config=task_config['data'])
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+        ])
+        dataset = get_dataset(**task_config['data'], transforms=transform)
         x_true = dataset[0]['image'].unsqueeze(0).to(device)
     
     # Create measurement

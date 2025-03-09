@@ -5,7 +5,14 @@ from functools import partial
 import yaml
 from torch.nn import functional as F
 from torchvision import torch
-from motionblur.motionblur import Kernel
+import numpy as np
+
+try:
+    from motionblur.motionblur import Kernel
+    MOTION_BLUR_AVAILABLE = True
+except ImportError:
+    MOTION_BLUR_AVAILABLE = False
+    print("Warning: motionblur package not available. Motion blur operations will not work.")
 
 from util.resizer import Resizer
 from util.img_utils import Blurkernel, fft2_m
@@ -29,6 +36,11 @@ def register_operator(name: str):
 def get_operator(name: str, **kwargs):
     if __OPERATOR__.get(name, None) is None:
         raise NameError(f"Name {name} is not defined.")
+    
+    # Check if trying to use motion blur when not available
+    if name == 'motion_blur' and not MOTION_BLUR_AVAILABLE:
+        raise ImportError("Motion blur operations are not available. Please install motionblur package.")
+    
     return __OPERATOR__[name](**kwargs)
 
 
@@ -256,7 +268,6 @@ class PoissonNoise(Noise):
         # TODO: set one version of poisson
        
         # version 3 (stack-overflow)
-        import numpy as np
         data = (data + 1.0) / 2.0
         data = data.clamp(0, 1)
         device = data.device
