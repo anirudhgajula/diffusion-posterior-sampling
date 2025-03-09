@@ -17,6 +17,7 @@ class MCMCSampler(ABC):
         self.measurement_op = measurement_op
         self.noise_model = noise_model
         self.prior_model = prior_model
+        self.samples = []  # Store samples for analysis
         
     def log_likelihood(self, x, y, **kwargs):
         """Compute log likelihood p(y|x).
@@ -60,7 +61,7 @@ class MCMCSampler(ABC):
         """Compute acceptance probability for proposed state."""
         pass
     
-    def sample(self, y, x_init, n_steps, record=False, save_root=None, **kwargs):
+    def sample(self, y, x_init, n_steps, record=False, save_root=None, store_samples=True, **kwargs):
         """Run MCMC sampling.
         
         Args:
@@ -69,6 +70,7 @@ class MCMCSampler(ABC):
             n_steps: Number of MCMC steps
             record: Whether to save intermediate states
             save_root: Directory to save intermediate states
+            store_samples: Whether to store samples for analysis
             **kwargs: Additional arguments for measurement operator
             
         Returns:
@@ -76,10 +78,14 @@ class MCMCSampler(ABC):
         """
         x_current = x_init
         accepted = 0
+        self.samples = []  # Reset samples
         
         # Create progress directory if needed
         if record and save_root is not None:
             os.makedirs(os.path.join(save_root, 'progress'), exist_ok=True)
+        
+        # Burn-in period (20% of steps)
+        burn_in = int(0.2 * n_steps)
         
         pbar = tqdm(range(n_steps))
         for step in pbar:
@@ -94,6 +100,10 @@ class MCMCSampler(ABC):
                 x_current = x_proposed
                 accepted += 1
             
+            # Store sample after burn-in
+            if store_samples and step >= burn_in:
+                self.samples.append(x_current.detach().clone())
+            
             # Record if requested
             if record and step % 10 == 0 and save_root is not None:
                 self.save_state(x_current, save_root, step)
@@ -105,6 +115,21 @@ class MCMCSampler(ABC):
             }, refresh=False)
             
         return x_current, accepted/n_steps
+    
+    def get_samples(self, thin=1):
+        """Get stored samples with thinning.
+        
+        Args:
+            thin: Take every nth sample
+            
+        Returns:
+            Tensor of samples [N, ...]
+        """
+        if not self.samples:
+            raise ValueError("No samples available. Run sampling with store_samples=True first.")
+        
+        samples = torch.stack(self.samples[::thin])
+        return samples
     
     def save_state(self, x, save_root, step):
         """Save current state."""
